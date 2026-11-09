@@ -106,9 +106,6 @@ export class OrderController {
 
       return {
         message: 'Checkout completed',
-        data: {
-          checkoutResult,
-        },
       };
     }
   }

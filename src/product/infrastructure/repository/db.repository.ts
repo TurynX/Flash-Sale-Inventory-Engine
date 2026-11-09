@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { Pool } from 'pg';
 import { PG_CONNECTION } from 'src/lib/db/db.provider';
 import { ProductEntity } from 'src/product/domain/entities/product.entity';
@@ -42,12 +42,12 @@ export class ProductRepository implements ProductPort {
     action?: string,
   ): Promise<ProductEntity | null> {
     if (action === 'rollback') {
-      const query = `UPDATE products SET total_stock = total_stock + $1 WHERE id = $2`;
+      const query = `UPDATE products SET total_stock = total_stock + $1 WHERE id = $2 RETURNING *`;
       const result = await this.db.query(query, [quantityChange, productId]);
       if (!result.rows[0]) return null;
       return this.mapToEntity(result.rows[0]);
     }
-    const query = `UPDATE products SET total_stock = total_stock - $1 WHERE id = $2`;
+    const query = `UPDATE products SET total_stock = total_stock - $1 WHERE id = $2 RETURNING *`;
     const result = await this.db.query(query, [quantityChange, productId]);
     if (!result.rows[0]) return null;
     return this.mapToEntity(result.rows[0]);

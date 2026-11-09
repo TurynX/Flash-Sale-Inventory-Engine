@@ -10,10 +10,17 @@ export class OrderRepository {
   async checkout(
     userId: string,
     productId: string,
-    quantity: string,
+    quantity: number,
+    status: 'complete' | 'cancelled',
   ): Promise<OrderEntity> {
-    const query = `INSERT into orders(user_id,product_id,quantity,status)VALUES ($1,$2,$3,'complete')`;
-    const order = await this.db.query(query, [userId, productId, quantity]);
+    const query = `INSERT into orders(user_id,product_id,quantity,status)VALUES ($1,$2,$3,$4) RETURNING *`;
+    const order = await this.db.query(query, [
+      userId,
+      productId,
+      quantity,
+      status,
+    ]);
+    console.log(order);
     if (!order.rows[0]) {
       throw new BadRequestException('Failed to create order');
     }

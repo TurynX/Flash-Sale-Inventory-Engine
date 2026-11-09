@@ -17,6 +17,8 @@ export class CheckoutUseCase {
     private readonly logger: Logger,
   ) {}
   async execute(userId: string, productId: string, quantity: number) {
+    let updateProductSuccess = false;
+    let stockRedisUpdateSuccess = false;
     try {
       this.logger.log(
         `Starting checkout for user ${userId}, product ${productId}, quantity ${quantity}`,
@@ -27,6 +29,8 @@ export class CheckoutUseCase {
         quantity,
         'complete',
       );
+
+      this.logger.log(result);
       if (!result) {
         throw new InternalServerErrorException('Failed to complete checkout');
       }
@@ -40,25 +44,42 @@ export class CheckoutUseCase {
       if (!updateProduct) {
         throw new InternalServerErrorException('Failed to update product');
       }
+      updateProductSuccess = true;
 
       this.logger.log('Updated product stock successfully');
 
-      await this.redis.decrby(`product:${productId}:stock`, quantity);
-      await this.redis.del(`reservation:${userId}:${productId}`);
-      await this.redis.set(
-        `order:${userId}:${productId}:${Date.now().toString()}`,
-        'completed',
-        'EX',
-        604800, // 7 days in seconds
+      const stockRedisUpdate = await this.redis.decrby(
+        `product:${productId}:stock`,
+        quantity,
       );
+      if (stockRedisUpdate == null) {
+      }
+      await this.redis.del(`reservation:${userId}:${productId}`);
+      stockRedisUpdateSuccess = true;
 
       return result;
     } catch (error: any) {
       this.logger.error(
         `Checkout failed for user ${userId}, product ${productId}: ${error.message}`,
       );
-      await this.productRepository.update(productId, quantity, 'rollback');
-      await this.redis.incrby(`product:${productId}:stock`, quantity);
     }
+
+    try {
+      this.logger.log(
+        `Rolled back stock update for product ${productId} by ${quantity}`,
+      );
+      if (updateProductSuccess === true) {
+        await this.productRepository.update(productId, quantity, 'rollback');
+        return;
+      }
+      if (stockRedisUpdateSuccess === true) {
+        await this.redis.incrby(`product:${productId}:stock`, quantity);
+      }
+    } catch (error: any) {
+      this.logger.error(
+        `Rollback failed for product ${productId}: ${error.message}`,
+      );
+    }
+    throw new InternalServerErrorException('Checkout failed');
   }
 }

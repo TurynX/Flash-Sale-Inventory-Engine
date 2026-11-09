@@ -43,7 +43,7 @@ export class StripeService {
           quantity: quantity,
         },
         mode: 'payment',
-        success_url: 'http://localhost:3000/orders/webhook/checkout',
+        success_url: 'http://youtube.com',
         cancel_url: 'http://youtube.com',
       });
       this.logger.log('Stripe payment intent created');
