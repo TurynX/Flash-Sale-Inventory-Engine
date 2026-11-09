@@ -6,7 +6,7 @@ import { ProductPort } from 'src/product/domain/ports/product.port';
 export class CreateProductUseCase {
   constructor(private readonly productPort: ProductPort) {}
   async execute(body: CreateProductDto) {
-    const { name, totalStock } = body;
-    return this.productPort.create(name, totalStock);
+    const { name, price, totalStock } = body;
+    return this.productPort.create(name, price, totalStock);
   }
 }

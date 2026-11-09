@@ -1,4 +1,9 @@
-import { Injectable, Inject, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  Inject,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import Redis from 'ioredis';
 import { ProductRepository } from 'src/product/infrastructure/repository/db.repository';
 
@@ -14,47 +19,32 @@ export class RedisInventoryAdapter {
     productId: string,
     quantity: number,
   ): Promise<boolean> {
-    while (true) {
-      try {
-        const stockKey = `product:${productId}:stock`;
+    const stockKey = `product:${productId}:stock`;
 
-        await this.redis.watch(stockKey);
-
-        const cachedStock = await this.redis.get(stockKey);
-        let currentStock: number;
-        if (!cachedStock) {
-          const product = await this.productRepository.findById(productId);
-          if (!product) {
-            await this.redis.unwatch();
-            throw new NotFoundException('Product not found');
-          }
-          currentStock = product.totalStock;
-          await this.redis.set(stockKey, JSON.stringify(product.totalStock));
-        } else {
-          currentStock = parseInt(cachedStock, 10);
-        }
-
-        console.log(currentStock, quantity);
-
-        if (currentStock < quantity) {
-          await this.redis.unwatch();
-          return false;
-        }
-
-        const reservationKey = `reservation:${userId}:${productId}:${quantity}`;
-
-        const result = await this.redis
-          .multi()
-          .decrby(stockKey, quantity)
-          .set(reservationKey, 'PENDING', 'EX', 600)
-          .exec();
-
-        if (result !== null) {
-          return true;
-        }
-      } catch (error) {
-        console.log(error);
+    const cachedStock = await this.redis.get(stockKey);
+    let currentStock: number;
+    if (!cachedStock) {
+      const product = await this.productRepository.findById(productId);
+      if (!product) {
+        throw new NotFoundException('Product not found');
       }
+
+      currentStock = product.totalStock;
+      await this.redis.set(stockKey, product.totalStock.toString());
+    } else {
+      currentStock = parseInt(cachedStock, 10);
     }
+
+    const newStock = await this.redis.decrby(stockKey, quantity);
+
+    if (newStock < 0) {
+      await this.redis.incrby(stockKey, quantity);
+      throw new BadRequestException('Insufficient stock');
+    }
+
+    const reservationKey = `reservation:${userId}:${productId}`;
+
+    await this.redis.set(reservationKey, quantity.toString(), 'EX', 60);
+    return true;
   }
 }

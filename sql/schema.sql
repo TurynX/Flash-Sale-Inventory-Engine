@@ -15,6 +15,7 @@ CREATE TABLE users (
 CREATE TABLE products (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name VARCHAR(255) NOT NULL,
+    price INT NOT NULL CHECK (price >= 0),
     total_stock INT NOT NULL CHECK (total_stock >= 0)
 );
 

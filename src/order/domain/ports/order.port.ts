@@ -5,5 +5,6 @@ export abstract class OrderPort {
     userId: string,
     productId: string,
     quantity: Number,
+    status: 'complete' | 'failed',
   ): Promise<OrderEntity>;
 }

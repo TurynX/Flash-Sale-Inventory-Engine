@@ -1,14 +1,20 @@
 import { Type } from 'class-transformer';
 import { IsNotEmpty, IsNumber, IsString, Min } from 'class-validator';
 
-export class OrderDto {
+export class ReserveDto {
   @IsString()
   @IsNotEmpty()
-  productId: string;
+  productId!: string;
 
   @IsNumber()
   @IsNotEmpty()
   @Min(1)
   @Type(() => Number)
-  quantity: number;
+  quantity!: number;
+}
+
+export class OrderDto {
+  @IsString()
+  @IsNotEmpty()
+  productId!: string;
 }

@@ -13,6 +13,9 @@ import { ProductRepository } from '../product/infrastructure/repository/db.repos
 import { CheckoutUseCase } from './application/use-cases/checkout-order.use-case';
 import { BullModule } from '@nestjs/bullmq';
 import { OrderPort } from './domain/ports/order.port';
+import { GenerateStripeUrlUseCase } from './application/use-cases/generate-stripe-url.use-case';
+import { PaymentModule } from 'src/payment/payment.module';
+import { StripeService } from 'src/payment/payment.service';
 
 @Module({
   imports: [
@@ -23,16 +26,19 @@ import { OrderPort } from './domain/ports/order.port';
     BullModule.registerQueue({
       name: 'reservation',
     }),
+    PaymentModule,
   ],
   controllers: [OrderController],
   providers: [
     { provide: OrderPort, useClass: OrderRepository },
     ReserveUseCase,
+    GenerateStripeUrlUseCase,
     CheckoutUseCase,
     JwtService,
     ProductRepository,
     RedisInventoryAdapter,
     ReservationExpiredWorker,
+    StripeService,
   ],
   exports: [],
 })

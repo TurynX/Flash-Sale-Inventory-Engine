@@ -8,6 +8,7 @@ import { OrderModule } from './order/order.module';
 
 import { LoggerModule } from 'nestjs-pino';
 import { BullModule } from '@nestjs/bullmq';
+import { PaymentModule } from './payment/payment.module';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { BullModule } from '@nestjs/bullmq';
             : undefined,
       },
     }),
+    PaymentModule,
   ],
 })
 export class AppModule {}

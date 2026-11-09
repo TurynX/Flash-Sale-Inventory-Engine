@@ -9,12 +9,16 @@ export class ProductRepository implements ProductPort {
   constructor(@Inject(PG_CONNECTION) private readonly db: Pool) {}
 
   mapToEntity(row: any): ProductEntity {
-    return new ProductEntity(row.id, row.name, row.total_stock);
+    return new ProductEntity(row.id, row.name, row.price, row.total_stock);
   }
 
-  async create(name: string, totalStock: number): Promise<ProductEntity> {
-    const query = `INSERT INTO products (name,total_stock) VALUES ($1,$2) RETURNING  *`;
-    const result = await this.db.query(query, [name, totalStock]);
+  async create(
+    name: string,
+    price: number,
+    totalStock: number,
+  ): Promise<ProductEntity> {
+    const query = `INSERT INTO products (name, price, total_stock) VALUES ($1, $2, $3) RETURNING *`;
+    const result = await this.db.query(query, [name, price, totalStock]);
     return this.mapToEntity(result.rows[0]);
   }
 
@@ -35,7 +39,14 @@ export class ProductRepository implements ProductPort {
   async update(
     productId: string,
     quantityChange: number,
+    action?: string,
   ): Promise<ProductEntity | null> {
+    if (action === 'rollback') {
+      const query = `UPDATE products SET total_stock = total_stock + $1 WHERE id = $2`;
+      const result = await this.db.query(query, [quantityChange, productId]);
+      if (!result.rows[0]) return null;
+      return this.mapToEntity(result.rows[0]);
+    }
     const query = `UPDATE products SET total_stock = total_stock - $1 WHERE id = $2`;
     const result = await this.db.query(query, [quantityChange, productId]);
     if (!result.rows[0]) return null;

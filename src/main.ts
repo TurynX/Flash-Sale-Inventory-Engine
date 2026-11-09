@@ -4,7 +4,10 @@ import { ValidationPipe } from '@nestjs/common';
 import { Logger } from 'nestjs-pino';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule, { bufferLogs: true });
+  const app = await NestFactory.create(AppModule, {
+    bufferLogs: true,
+    rawBody: true,
+  });
   const logger = app.get(Logger);
   app.useLogger(logger);
   app.useGlobalPipes(new ValidationPipe());

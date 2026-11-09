@@ -1,16 +1,19 @@
 import { InjectQueue } from '@nestjs/bullmq';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { Queue } from 'bullmq';
-import { OrderDto } from 'src/order/infrastructure/dtos/order-dto';
+import { Logger } from 'nestjs-pino';
+import { ReserveDto } from '../../infrastructure/dtos/order-dto';
 import { RedisInventoryAdapter } from 'src/order/infrastructure/services/redis-inventory.adapter';
 
 @Injectable()
 export class ReserveUseCase {
   constructor(
     private readonly redisInventoryAdapter: RedisInventoryAdapter,
+    private readonly logger: Logger,
+
     @InjectQueue('reservation') private readonly reservationQueue: Queue,
   ) {}
-  async execute(body: OrderDto, userId: string) {
+  async execute(body: ReserveDto, userId: string) {
     const result = await this.redisInventoryAdapter.reserveWithOptimisticLock(
       userId,
       body.productId,
@@ -30,9 +33,11 @@ export class ReserveUseCase {
         quantity: body.quantity,
       },
       {
-        delay: 10 * 60 * 1000,
+        delay: 60 * 1000, // 60 seconds
       },
     );
+
+    this.logger.log('Product reserved successfully');
 
     return true;
   }
