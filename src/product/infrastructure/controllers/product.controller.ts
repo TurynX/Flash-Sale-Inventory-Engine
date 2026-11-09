@@ -6,6 +6,8 @@ import {
   HttpStatus,
   Param,
   Post,
+  Req,
+  UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
 import { CreateProductUseCase } from 'src/product/application/use-cases/create-product.use-case';
@@ -24,8 +26,15 @@ export class ProductController {
   @Post()
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.CREATED)
-  async createProduct(@Body() body: CreateProductDto) {
+  async createProduct(@Req() req: Request, @Body() body: CreateProductDto) {
+    const role = req['user'].role;
+
+    if (role !== 'admin') {
+      throw new UnauthorizedException('You are not authorized');
+    }
+
     const result = await this.createProductUseCase.execute(body);
+
     return { data: result };
   }
   @Get()

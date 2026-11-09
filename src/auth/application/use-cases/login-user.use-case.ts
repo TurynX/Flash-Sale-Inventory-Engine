@@ -23,9 +23,16 @@ export class LoginUserUseCase {
     if (!isValidPassword)
       throw new UnauthorizedException('Invalid credentials');
 
+    let role = 'user';
+
+    if (exist.email === 'secretadmin@gmail.com') {
+      role = 'admin';
+    }
+
     const payload = {
       sub: exist.id,
       email: exist.email,
+      role,
     };
 
     const token = await this.jwtService.signAsync(payload);

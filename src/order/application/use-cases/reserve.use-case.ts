@@ -33,7 +33,7 @@ export class ReserveUseCase {
         quantity: body.quantity,
       },
       {
-        delay: 60 * 1000, // 60 seconds
+        delay: 10 * 60 * 1000, //10 minutes seconds
       },
     );
 
