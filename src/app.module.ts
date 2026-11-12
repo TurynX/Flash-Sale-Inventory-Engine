@@ -12,7 +12,11 @@ import { PaymentModule } from './payment/payment.module';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true }),
+    ConfigModule.forRoot({
+      isGlobal: true,
+      envFilePath: process.env.NODE_ENV === 'test' ? '.env.test' : '.env',
+    }),
+
     DbModule,
     RedisModule,
     AuthModule,
@@ -26,8 +30,9 @@ import { PaymentModule } from './payment/payment.module';
     }),
     LoggerModule.forRoot({
       pinoHttp: {
+        autoLogging: process.env.NODE_ENV !== 'test',
         transport:
-          process.env.NODE_ENV != 'production'
+          process.env.NODE_ENV === 'test'
             ? { target: 'pino-pretty', options: { colorized: true } }
             : undefined,
       },

@@ -51,7 +51,7 @@ export class OrderController {
   }
 
   @Post('generate-stripe-url')
-  @HttpCode(HttpStatus.ACCEPTED)
+  @HttpCode(HttpStatus.CREATED)
   async generateUrl(@Req() req: Request, @Body() body: OrderDto) {
     const userId = req['user'].sub;
     if (!userId) throw new UnauthorizedException('userId not provided');

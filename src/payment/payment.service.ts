@@ -46,7 +46,9 @@ export class StripeService {
         success_url: 'http://youtube.com',
         cancel_url: 'http://youtube.com',
       });
+
       this.logger.log('Stripe payment intent created');
+
       return {
         success: paymentIntent.status,
         chargeId: paymentIntent.id,

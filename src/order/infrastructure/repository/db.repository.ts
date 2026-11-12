@@ -20,7 +20,7 @@ export class OrderRepository {
       quantity,
       status,
     ]);
-    console.log(order);
+
     if (!order.rows[0]) {
       throw new BadRequestException('Failed to create order');
     }

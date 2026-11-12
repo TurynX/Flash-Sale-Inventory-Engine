@@ -6,11 +6,11 @@ export abstract class ProductPort {
     price: number,
     totalStock: number,
   ): Promise<ProductEntity>;
-  abstract findAll(): Promise<ProductEntity[] | null>;
-  abstract findById(id: string): Promise<ProductEntity | null>;
+  abstract findAll(): Promise<ProductEntity[]>;
+  abstract findById(id: string): Promise<ProductEntity>;
   abstract update(
     productId: string,
     quantityChange: number,
     action?: 'complete' | 'rollback',
-  ): Promise<ProductEntity | null>;
+  ): Promise<ProductEntity>;
 }

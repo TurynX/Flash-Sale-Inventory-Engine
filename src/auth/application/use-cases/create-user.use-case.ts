@@ -13,7 +13,6 @@ export class CreateUserUseCase {
 
   async execute(body: CreateUserDto) {
     const userAlreadyExists = await this.authPort.findByEmail(body.email);
-    console.log(userAlreadyExists, '2');
     if (userAlreadyExists) throw new BadRequestException('User already exists');
 
     const hashedPassword = await argon2.hash(body.password);
@@ -22,6 +21,11 @@ export class CreateUserUseCase {
 
     if (!result) throw new InternalServerErrorException('User not created');
 
-    return result;
+    const user = {
+      id: result.id,
+      email: result.email,
+    };
+
+    return user;
   }
 }

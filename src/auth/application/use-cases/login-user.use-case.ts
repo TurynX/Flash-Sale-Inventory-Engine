@@ -14,7 +14,6 @@ export class LoginUserUseCase {
   async execute(body: CreateUserDto) {
     const exist = await this.authPort.findByEmail(body.email);
     if (!exist) throw new UnauthorizedException('Invalid credentials');
-    console.log(body.password, exist.hashedPassword);
     const isValidPassword = await argon2.verify(
       exist.hashedPassword,
       body.password,
@@ -25,7 +24,7 @@ export class LoginUserUseCase {
 
     let role = 'user';
 
-    if (exist.email === 'secretadmin@gmail.com') {
+    if (exist.email === process.env.ADMIN_EMAIL) {
       role = 'admin';
     }
 

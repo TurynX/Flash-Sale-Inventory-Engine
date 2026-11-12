@@ -5,6 +5,7 @@ import {
   HttpCode,
   HttpStatus,
   Param,
+  ParseUUIDPipe,
   Post,
   Req,
   UnauthorizedException,
@@ -35,19 +36,19 @@ export class ProductController {
 
     const result = await this.createProductUseCase.execute(body);
 
-    return { data: result };
+    return { message: 'Product created successfully', data: result };
   }
   @Get()
   @HttpCode(HttpStatus.OK)
   async findAll() {
     const result = await this.findAllProductsUseCase.execute();
-    return { data: result };
+    return { message: 'Products retrieved successfully', data: result };
   }
 
   @Get(':id')
   @HttpCode(HttpStatus.OK)
-  async findById(@Param('id') id: string) {
+  async findById(@Param('id', ParseUUIDPipe) id: string) {
     const result = await this.findByIdUseCase.execute(id);
-    return { data: result };
+    return { message: 'Product retrieved successfully', data: result };
   }
 }

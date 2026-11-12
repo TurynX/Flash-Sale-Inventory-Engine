@@ -18,6 +18,7 @@ export class FindProductByIdUseCase {
     }
 
     const result = await this.productPort.findById(id);
+
     if (!result) throw new NotFoundException('Product not found');
 
     await this.redis.set(key, JSON.stringify(result), 'EX', 60);

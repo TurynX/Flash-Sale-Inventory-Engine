@@ -1,4 +1,4 @@
-import { BadRequestException, Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { Pool } from 'pg';
 import { PG_CONNECTION } from 'src/lib/db/db.provider';
 import { ProductEntity } from 'src/product/domain/entities/product.entity';
@@ -22,34 +22,45 @@ export class ProductRepository implements ProductPort {
     return this.mapToEntity(result.rows[0]);
   }
 
-  async findAll(): Promise<ProductEntity[] | null> {
+  async findAll(): Promise<ProductEntity[]> {
     const query = `SELECT * FROM products`;
     const result = await this.db.query(query);
-    if (!result.rows[0]) return null;
+    if (!result.rows[0]) throw new NotFoundException('No products found');
     return result.rows.map((row) => this.mapToEntity(row));
   }
 
-  async findById(id: string): Promise<ProductEntity | null> {
-    const query = `SELECT * FROM products WHERE id = $1`;
-    const result = await this.db.query(query, [id]);
-    if (!result.rows[0]) return null;
-    return this.mapToEntity(result.rows[0]);
+  async findById(id: string): Promise<ProductEntity> {
+    try {
+      const query = `SELECT * FROM products WHERE id = $1`;
+      const result = await this.db.query(query, [id]);
+
+      if (!result.rows[0]) {
+        throw new NotFoundException('Product not found');
+      }
+
+      return this.mapToEntity(result.rows[0]);
+    } catch (error: any) {
+      if (error.code === '22P02') {
+        throw new NotFoundException('Product not found');
+      }
+      throw error;
+    }
   }
 
   async update(
     productId: string,
     quantityChange: number,
     action?: string,
-  ): Promise<ProductEntity | null> {
+  ): Promise<ProductEntity> {
     if (action === 'rollback') {
       const query = `UPDATE products SET total_stock = total_stock + $1 WHERE id = $2 RETURNING *`;
       const result = await this.db.query(query, [quantityChange, productId]);
-      if (!result.rows[0]) return null;
+      if (!result.rows[0]) throw new NotFoundException('Product not found');
       return this.mapToEntity(result.rows[0]);
     }
     const query = `UPDATE products SET total_stock = total_stock - $1 WHERE id = $2 RETURNING *`;
     const result = await this.db.query(query, [quantityChange, productId]);
-    if (!result.rows[0]) return null;
+    if (!result.rows[0]) throw new NotFoundException('Product not found');
     return this.mapToEntity(result.rows[0]);
   }
 }

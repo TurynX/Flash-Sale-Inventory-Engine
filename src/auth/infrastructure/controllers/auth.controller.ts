@@ -18,7 +18,6 @@ export class AuthController {
   @Post()
   async create(@Body() body: CreateUserDto) {
     const result = await this.createUserUseCase.execute(body);
-    console.log(result);
 
     if (!result) throw new InternalServerErrorException('User not created');
 

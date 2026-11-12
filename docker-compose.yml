@@ -14,6 +14,19 @@ services:
       - ./sql/schema.sql:/docker-entrypoint-initdb.d/schema.sql
       - pgdata:/var/lib/postgresql/data
 
+  postgres_test:
+    image: postgres:15-alpine
+    container_name: flash_sale_pg_test
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: flash_sale_test
+    ports:
+      - '5433:5432'
+    volumes:
+      - ./sql/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+      - pgdata_test:/var/lib/postgresql/data
+
   adminer:
     image: adminer
     container_name: adminer_gui
@@ -29,5 +42,12 @@ services:
     ports:
       - '6379:6379'
 
+  redis_test:
+    image: redis:7-alpine
+    container_name: flash_sale_redis_test
+    ports:
+      - '6380:6379'
+
 volumes:
   pgdata:
+  pgdata_test:
