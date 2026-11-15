@@ -18,8 +18,16 @@ import { GenerateStripeUrlUseCase } from 'src/order/application/use-cases/genera
 import Stripe from 'stripe';
 import { Logger } from 'nestjs-pino';
 import { Public } from 'src/auth/infrastructure/guards/public-auth.guard';
+import {
+  ApiBearerAuth,
+  ApiHeader,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 
 @UseGuards(JwtAuthGuard)
+@ApiTags('Orders')
 @Controller('orders')
 export class OrderController {
   private stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
@@ -33,6 +41,27 @@ export class OrderController {
   ) {}
   @Post()
   @HttpCode(HttpStatus.CREATED)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Reserve product inventory' })
+  @ApiResponse({
+    status: 201,
+    description: 'Product reserved',
+    schema: {
+      example: {
+        message: 'Product reserved',
+        data: {
+          productId: '550e8400-e29b-41d4-a716-446655440000',
+          quantity: 2,
+        },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Invalid data or insufficient stock',
+  })
+  @ApiResponse({ status: 401, description: 'Missing or invalid bearer token' })
+  @ApiResponse({ status: 500, description: 'Order could not be created' })
   async reserve(@Req() req: Request, @Body() body: ReserveDto) {
     const userId = req['user'].sub;
     if (!userId) throw new UnauthorizedException('userId not provided');
@@ -52,6 +81,30 @@ export class OrderController {
 
   @Post('generate-stripe-url')
   @HttpCode(HttpStatus.CREATED)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Generate a Stripe checkout URL for a reservation' })
+  @ApiResponse({
+    status: 201,
+    description: 'Stripe checkout URL generated',
+    schema: {
+      example: {
+        message: 'Stripe URL generated',
+        data: {
+          result: 'https://checkout.stripe.com/c/pay/cs_test_example',
+        },
+      },
+    },
+  })
+  @ApiResponse({ status: 400, description: 'Invalid data' })
+  @ApiResponse({ status: 401, description: 'Missing or invalid bearer token' })
+  @ApiResponse({
+    status: 404,
+    description: 'Reservation expired or product not found',
+  })
+  @ApiResponse({
+    status: 500,
+    description: 'Stripe URL could not be generated',
+  })
   async generateUrl(@Req() req: Request, @Body() body: OrderDto) {
     const userId = req['user'].sub;
     if (!userId) throw new UnauthorizedException('userId not provided');

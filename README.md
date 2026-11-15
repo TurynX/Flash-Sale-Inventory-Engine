@@ -22,27 +22,27 @@
 
 ---
 
-## 🛣️ API Routes
+## 🛣️ API Routes & Swagger Specification
 
 ### 🔐 Auth (`/auth`)
-| Method | Endpoint | Description |
-| :--- | :--- | :--- |
-| ![POST](https://img.shields.io/badge/POST-49CC90?style=flat-square) | `/auth` | Register a new user |
-| ![POST](https://img.shields.io/badge/POST-49CC90?style=flat-square) | `/auth/login` | Authenticate user & return JWT |
+| Method | Endpoint | Description | Responses |
+| :--- | :--- | :--- | :--- |
+| ![POST](https://img.shields.io/badge/POST-49CC90?style=flat-square) | `/auth` | Create a new user | `201`: Created<br>`400`: Invalid data / User exists |
+| ![POST](https://img.shields.io/badge/POST-49CC90?style=flat-square) | `/auth/login` | Authenticate user & return JWT | `200`: Success<br>`401`: Invalid credentials |
 
 ### 📦 Products (`/product`)
-| Method | Endpoint | Description |
-| :--- | :--- | :--- |
-| ![POST](https://img.shields.io/badge/POST-49CC90?style=flat-square) | `/product` | Create a new flash-sale product |
-| ![GET](https://img.shields.io/badge/GET-61AFFE?style=flat-square) | `/product` | List all available products |
-| ![GET](https://img.shields.io/badge/GET-61AFFE?style=flat-square) | `/product/:id` | Get product details by UUID |
+| Method | Endpoint | Description | Responses |
+| :--- | :--- | :--- | :--- |
+| ![POST](https://img.shields.io/badge/POST-49CC90?style=flat-square) | `/product` | Create a product *(Admin only, via `ADMIN_EMAIL`)* | `201`: Created<br>`401`: Unauthorized |
+| ![GET](https://img.shields.io/badge/GET-61AFFE?style=flat-square) | `/product` | Get all products | `200`: Success |
+| ![GET](https://img.shields.io/badge/GET-61AFFE?style=flat-square) | `/product/{id}` | Get product details by UUID | `200`: Success<br>`404`: Not found |
 
 ### 🛒 Orders & Payments (`/orders`)
-| Method | Endpoint | Description |
-| :--- | :--- | :--- |
-| ![POST](https://img.shields.io/badge/POST-49CC90?style=flat-square) | `/orders` | Reserve inventory & initiate order |
-| ![POST](https://img.shields.io/badge/POST-49CC90?style=flat-square) | `/orders/generate-stripe-url` | Generate Stripe Checkout payment URL |
-| ![POST](https://img.shields.io/badge/POST-49CC90?style=flat-square) | `/orders/webhook/checkout` | Handle `checkout.session.completed` webhook |
+| Method | Endpoint | Description | Responses |
+| :--- | :--- | :--- | :--- |
+| ![POST](https://img.shields.io/badge/POST-49CC90?style=flat-square) | `/orders` | Reserve product inventory | `201`: Reserved<br>`400`: Low stock<br>`401`: Unauthorized |
+| ![POST](https://img.shields.io/badge/POST-49CC90?style=flat-square) | `/orders/generate-stripe-url` | Generate Stripe checkout URL for reservation | `201`: URL generated<br>`404`: Expired |
+| ![POST](https://img.shields.io/badge/POST-49CC90?style=flat-square) | `/orders/webhook/checkout` | Handle Stripe checkout webhook events *(Requires `stripe-signature` header)* | `202`: Accepted<br>`500`: Signature failed |
 
 ---
 
