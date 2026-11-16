@@ -30,6 +30,7 @@ CREATE TABLE inventory_ledger (
 );
 
 CREATE TYPE order_status AS ENUM (
+    'pending',
     'complete',
     'cancelled'
 );

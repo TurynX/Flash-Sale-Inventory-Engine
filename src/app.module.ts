@@ -9,6 +9,9 @@ import { OrderModule } from './order/order.module';
 import { LoggerModule } from 'nestjs-pino';
 import { BullModule } from '@nestjs/bullmq';
 import { PaymentModule } from './payment/payment.module';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import { APP_GUARD } from '@nestjs/core';
+import { InventoryLedgerModule } from './inventory-ledger/inventory-ledger.module';
 
 @Module({
   imports: [
@@ -16,6 +19,12 @@ import { PaymentModule } from './payment/payment.module';
       isGlobal: true,
       envFilePath: process.env.NODE_ENV === 'test' ? '.env.test' : '.env',
     }),
+    ThrottlerModule.forRoot([
+      {
+        ttl: 60000,
+        limit: 20,
+      },
+    ]),
 
     DbModule,
     RedisModule,
@@ -38,6 +47,8 @@ import { PaymentModule } from './payment/payment.module';
       },
     }),
     PaymentModule,
+    InventoryLedgerModule,
   ],
+  providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
 })
 export class AppModule {}

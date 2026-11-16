@@ -75,8 +75,6 @@ describe('OrderController (e2e)', () => {
       })
       .expect(201);
 
-    // Debugging line to print the response body
-
     expect(res.body).toHaveProperty('message');
     expect(res.body).toHaveProperty('data');
     expect(res.body.data).toHaveProperty('productId');
@@ -101,7 +99,7 @@ describe('OrderController (e2e)', () => {
     expect(res.body.data.result).toHaveProperty('url');
   });
 
-  it('should checkout ', async () => {
+  it('should checkout and create inventory_ledger', async () => {
     mockConstructEvent.mockReturnValue({
       id: 'evt_test_123',
       object: 'event',
@@ -126,6 +124,17 @@ describe('OrderController (e2e)', () => {
       .expect(202);
 
     expect(response.body).toEqual({ message: 'Checkout completed' });
+  });
+
+  it('should return inventory_ledger', async () => {
+    const ledgerRes = await db.query(
+      'SELECT * FROM inventory_ledger WHERE product_id = $1 AND user_id = $2 AND quantity_change = $3 ',
+      [product.id, product.userId, -product.totalStock],
+    );
+
+    expect(ledgerRes.rows).toHaveLength(1);
+    expect(ledgerRes.rows[0].quantity_change).toBe(-product.totalStock);
+    expect(ledgerRes.rows[0].type).toBe('checkout');
   });
   afterAll(() => {});
 });

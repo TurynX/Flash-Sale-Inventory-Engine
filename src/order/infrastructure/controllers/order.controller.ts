@@ -25,6 +25,7 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import { Throttle } from '@nestjs/throttler';
 
 @UseGuards(JwtAuthGuard)
 @ApiTags('Orders')
@@ -39,6 +40,7 @@ export class OrderController {
     private readonly checkoutUseCase: CheckoutUseCase,
     private readonly logger: Logger,
   ) {}
+  @Throttle({ default: { limit: 20, ttl: 60000 } })
   @Post()
   @HttpCode(HttpStatus.CREATED)
   @ApiBearerAuth()
@@ -79,6 +81,7 @@ export class OrderController {
     };
   }
 
+  @Throttle({ default: { limit: 20, ttl: 60000 } })
   @Post('generate-stripe-url')
   @HttpCode(HttpStatus.CREATED)
   @ApiBearerAuth()

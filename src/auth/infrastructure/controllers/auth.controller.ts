@@ -10,6 +10,7 @@ import { CreateUserUseCase } from 'src/auth/application/use-cases/create-user.us
 import { CreateUserDto } from '../dtos/auth-dto';
 import { LoginUserUseCase } from 'src/auth/application/use-cases/login-user.use-case';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Throttle } from '@nestjs/throttler';
 
 @ApiTags('Users')
 @Controller('auth')
@@ -48,6 +49,7 @@ export class AuthController {
     return { message: 'User created successfully', data: result };
   }
 
+  @Throttle({ default: { limit: 10, ttl: 60000 } })
   @Post('login')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Login a user' })

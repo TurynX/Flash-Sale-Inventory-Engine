@@ -53,7 +53,7 @@ describe('AuthController (e2e)', () => {
     const res = await request(app.getHttpServer())
       .post('/auth/login')
       .send({ email: 'testuser@gmail.com', password: 'testpassword' })
-      .expect(201);
+      .expect(200);
     expect(res.body).toHaveProperty('message');
     expect(res.body).toHaveProperty('data');
     expect(res.body.data).toHaveProperty('token');

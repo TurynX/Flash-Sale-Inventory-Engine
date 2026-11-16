@@ -5,6 +5,15 @@ export abstract class OrderPort {
     userId: string,
     productId: string,
     quantity: Number,
-    status: 'complete' | 'cancelled ',
+    status: 'pending' | 'complete' | 'cancelled ',
+  ): Promise<OrderEntity>;
+  abstract update(
+    orderId: string,
+    status: 'pending' | 'complete' | 'cancelled',
+  ): Promise<OrderEntity>;
+  abstract find(
+    productId: string,
+    userId: string,
+    quantity: number,
   ): Promise<OrderEntity>;
 }

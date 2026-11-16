@@ -1,6 +1,7 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import Redis from 'ioredis';
 import { Logger } from 'nestjs-pino';
+import { OrderPort } from 'src/order/domain/ports/order.port';
 import { StripeService } from 'src/payment/payment.service';
 import { ProductPort } from 'src/product/domain/ports/product.port';
 
@@ -11,6 +12,7 @@ export class GenerateStripeUrlUseCase {
     private readonly stripeService: StripeService,
     private readonly productRepository: ProductPort,
     private readonly logger: Logger,
+    private readonly orderRepository: OrderPort,
   ) {}
   async execute(userId: string, productId: string) {
     const key = `reservation:${userId}:${productId}`;
@@ -35,6 +37,13 @@ export class GenerateStripeUrlUseCase {
       product.name,
       product.price,
       reservedQuantity,
+    );
+
+    const createOrder = await this.orderRepository.checkout(
+      userId,
+      productId,
+      reservedQuantity,
+      'pending',
     );
 
     this.logger.log('Stripe checkout session created');

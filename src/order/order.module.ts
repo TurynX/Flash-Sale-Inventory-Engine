@@ -16,6 +16,8 @@ import { OrderPort } from './domain/ports/order.port';
 import { GenerateStripeUrlUseCase } from './application/use-cases/generate-stripe-url.use-case';
 import { PaymentModule } from 'src/payment/payment.module';
 import { StripeService } from 'src/payment/payment.service';
+import { InventoryLedgerModule } from 'src/inventory-ledger/inventory-ledger.module';
+import { InventoryLedgerRepository } from 'src/inventory-ledger/infrastructure/repositories/inventory-ledger.repository';
 
 @Module({
   imports: [
@@ -27,6 +29,7 @@ import { StripeService } from 'src/payment/payment.service';
       name: 'reservation',
     }),
     PaymentModule,
+    InventoryLedgerModule,
   ],
   controllers: [OrderController],
   providers: [
@@ -39,6 +42,7 @@ import { StripeService } from 'src/payment/payment.service';
     RedisInventoryAdapter,
     ReservationExpiredWorker,
     StripeService,
+    InventoryLedgerRepository,
   ],
   exports: [],
 })
