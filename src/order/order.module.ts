@@ -18,6 +18,7 @@ import { PaymentModule } from 'src/payment/payment.module';
 import { StripeService } from 'src/payment/payment.service';
 import { InventoryLedgerModule } from 'src/inventory-ledger/inventory-ledger.module';
 import { InventoryLedgerRepository } from 'src/inventory-ledger/infrastructure/repositories/inventory-ledger.repository';
+import { OrderTtlWorker } from './infrastructure/worker/order-ttl.worker';
 
 @Module({
   imports: [
@@ -27,6 +28,9 @@ import { InventoryLedgerRepository } from 'src/inventory-ledger/infrastructure/r
     ProductModule,
     BullModule.registerQueue({
       name: 'reservation',
+    }),
+    BullModule.registerQueue({
+      name: 'order-ttl',
     }),
     PaymentModule,
     InventoryLedgerModule,
@@ -41,6 +45,7 @@ import { InventoryLedgerRepository } from 'src/inventory-ledger/infrastructure/r
     ProductRepository,
     RedisInventoryAdapter,
     ReservationExpiredWorker,
+    OrderTtlWorker,
     StripeService,
     InventoryLedgerRepository,
   ],

@@ -1,4 +1,6 @@
+import { InjectQueue } from '@nestjs/bullmq';
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { Queue } from 'bullmq';
 import Redis from 'ioredis';
 import { Logger } from 'nestjs-pino';
 import { OrderPort } from 'src/order/domain/ports/order.port';
@@ -13,6 +15,7 @@ export class GenerateStripeUrlUseCase {
     private readonly productRepository: ProductPort,
     private readonly logger: Logger,
     private readonly orderRepository: OrderPort,
+    @InjectQueue('order-ttl') private readonly orderTtlQueue: Queue,
   ) {}
   async execute(userId: string, productId: string) {
     const key = `reservation:${userId}:${productId}`;
@@ -39,11 +42,21 @@ export class GenerateStripeUrlUseCase {
       reservedQuantity,
     );
 
-    const createOrder = await this.orderRepository.checkout(
+    const order = await this.orderRepository.checkout(
       userId,
       productId,
       reservedQuantity,
       'pending',
+    );
+
+    await this.orderTtlQueue.add(
+      'order-ttl',
+      { orderId: order.id, productId, reservedQuantity },
+      {
+        delay: process.env.ORDER_TTL_WORKER_DELAY
+          ? parseInt(process.env.ORDER_TTL_WORKER_DELAY, 10)
+          : 1200000,
+      },
     );
 
     this.logger.log('Stripe checkout session created');

@@ -51,12 +51,26 @@ export class OrderRepository {
     return this.mapToEntity(order.rows[0]);
   }
 
-  async find(productId: string, userId: string, quantity: number) {
+  async find(
+    productId: string,
+    userId: string,
+    quantity: number,
+    orderId: string,
+  ) {
+    if (orderId) {
+      const query = `SELECT * FROM orders WHERE id = $1`;
+      const order = await this.db.query(query, [orderId]);
+      if (!order.rows[0]) {
+        throw new NotFoundException('Order not found');
+      }
+
+      return this.mapToEntity(order.rows[0]);
+    }
     const query = `SELECT * FROM orders WHERE product_id = $1 AND user_id = $2 AND quantity = $3`;
     const order = await this.db.query(query, [productId, userId, quantity]);
 
     if (!order.rows[0]) {
-      throw new NotFoundException('Product not found');
+      throw new NotFoundException('Order not found');
     }
 
     return this.mapToEntity(order.rows[0]);

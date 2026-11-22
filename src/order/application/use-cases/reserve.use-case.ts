@@ -33,9 +33,9 @@ export class ReserveUseCase {
         quantity: body.quantity,
       },
       {
-        delay: process.env.WORKER_DELAY
-          ? parseInt(process.env.WORKER_DELAY, 10)
-          : 60000,
+        delay: process.env.RESERVATION_WORKER_DELAY
+          ? parseInt(process.env.RESERVATION_WORKER_DELAY, 10)
+          : 600000,
       },
     );
 

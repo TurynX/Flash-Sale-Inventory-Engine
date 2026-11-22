@@ -15,5 +15,6 @@ export abstract class OrderPort {
     productId: string,
     userId: string,
     quantity: number,
+    orderId?: string,
   ): Promise<OrderEntity>;
 }
